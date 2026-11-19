@@ -1,4 +1,4 @@
-.PHONY: setup proto seed test benchmark
+.PHONY: setup proto seed test benchmark charts
 
 setup:
 	python3 -m venv .venv
@@ -17,4 +17,7 @@ test:
 
 benchmark:
 	PYTHONPATH=src .venv/bin/python -m music_service.benchmarks.run
+
+charts:
+	.venv/bin/python scripts/generate_charts.py
 

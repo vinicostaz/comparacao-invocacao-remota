@@ -37,7 +37,7 @@ Também oferece as consultas relacionais solicitadas:
 .
 ├── apresentacao/        # apresentação final
 ├── enunciado/           # PDF fornecido pelo professor
-├── results/             # resultados brutos em CSV e JSON
+├── results/             # resultados brutos e gráficos em PNG
 ├── scripts/             # geração dos stubs gRPC
 ├── src/music_service/   # domínio, APIs e benchmark
 ├── tests/               # testes automatizados
@@ -124,6 +124,28 @@ Cada tecnologia recebe 180 operações em cada nível:
 
 Os gráficos da apresentação usam escala linear. Os dados brutos estão em [`results/benchmark.csv`](results/benchmark.csv) e [`results/benchmark.json`](results/benchmark.json).
 
+Para gerar novamente as imagens a partir do CSV:
+
+```bash
+make charts
+```
+
+## Gráficos dos resultados
+
+Todos os eixos usam escala linear. Em cada gráfico, as cargas baixa, média e alta correspondem respectivamente às concorrências 1, 10 e 30, sempre com 180 operações por tecnologia e nível.
+
+### Leitura de usuário por ID
+
+![Vazão e latência p95 na leitura de usuário por ID](results/graficos/leitura_usuario.png)
+
+### Leitura de músicas de uma playlist
+
+![Vazão e latência p95 na leitura de músicas de uma playlist](results/graficos/leitura_playlist.png)
+
+### Ciclo de criação e remoção
+
+![Vazão e latência p95 no ciclo de criação e remoção](results/graficos/ciclo_escrita.png)
+
 ### Vazão com carga média
 
 | Perfil | REST | GraphQL | SOAP | gRPC |
@@ -140,4 +162,7 @@ Os 6.480 casos medidos terminaram sem erro. Os resultados descrevem estas implem
 - [Enunciado em PDF](enunciado/Trabalho_6.pdf)
 - [Resultados em CSV](results/benchmark.csv)
 - [Resultados em JSON](results/benchmark.json)
+- [Gráfico de leitura de usuário](results/graficos/leitura_usuario.png)
+- [Gráfico de leitura de playlist](results/graficos/leitura_playlist.png)
+- [Gráfico do ciclo de escrita](results/graficos/ciclo_escrita.png)
 
