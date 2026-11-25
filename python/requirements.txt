@@ -1,0 +1,18 @@
+# Servidores (Python 3.10+)
+fastapi>=0.110
+uvicorn[standard]>=0.29
+ariadne>=0.23
+spyne==2.14.0
+lxml>=5.0
+six>=1.16          # usado por compat_spyne.py (Spyne no Python 3.12+)
+legacy-cgi>=2.6; python_version >= "3.13"   # Spyne usa o módulo cgi, removido no Python 3.13
+waitress>=3.0
+grpcio>=1.60
+grpcio-tools>=1.60
+protobuf>=4.25
+
+# Clientes, teste funcional e testes de carga
+requests>=2.31
+zeep>=4.2
+locust>=2.20
+matplotlib>=3.8

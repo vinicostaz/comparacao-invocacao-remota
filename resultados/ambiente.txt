@@ -1,0 +1,5 @@
+[2026-11-24 22:26] serviços: java-graphql, java-grpc, java-rest, java-soap, python-graphql, python-grpc, python-rest, python-soap
+  SO: Linux-7.2.6-76070206-generic-x86_64-with-glibc2.39 | CPUs lógicas: 16
+  Python: 3.12.3 | openjdk version "21.0.12.1" 2026-08-18
+  cenários: ['consulta', 'relacionamento', 'catalogo', 'crud'] | níveis fixos: [1, 10, 20, 30, 40] usuários | 4s por medição | aquecimento 3s | processos Locust: 1
+  gerador de carga (Locust) e servidor na MESMA máquina

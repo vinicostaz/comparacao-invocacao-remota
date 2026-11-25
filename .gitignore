@@ -3,8 +3,9 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .coverage
-data/*.db
-data/*.db-*
-.build/
+java/**/target/
+resultados/logs/
+*.log
 tmp/
-
+output/
+.codex-presentation/

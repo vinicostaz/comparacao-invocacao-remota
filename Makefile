@@ -1,23 +1,23 @@
-.PHONY: setup proto seed test benchmark charts
+.PHONY: setup build-java start test benchmark charts
 
 setup:
 	python3 -m venv .venv
 	.venv/bin/python -m pip install --upgrade pip
-	.venv/bin/python -m pip install -e '.[dev]'
-	PATH="$(CURDIR)/.venv/bin:$$PATH" bash scripts/compile_proto.sh
+	.venv/bin/python -m pip install -r python/requirements.txt
 
-proto:
-	PATH="$(CURDIR)/.venv/bin:$$PATH" bash scripts/compile_proto.sh
+build-java:
+	cd java && mvn -q package
 
-seed:
-	PYTHONPATH=src .venv/bin/python -m music_service.seed
+start:
+	.venv/bin/python testes/iniciar_servicos.py
 
 test:
-	PYTHONPATH=src .venv/bin/python -m pytest
+	.venv/bin/python testes/testar_servicos.py --servicos todos
 
 benchmark:
-	PYTHONPATH=src .venv/bin/python -m music_service.benchmarks.run
+	.venv/bin/python testes/carga/executar_testes.py \
+		--servicos todos --usuarios 1,10,20,30,40 \
+		--cenarios consulta,relacionamento,catalogo,crud
 
 charts:
-	.venv/bin/python scripts/generate_charts.py
-
+	.venv/bin/python testes/carga/graficos.py resultados

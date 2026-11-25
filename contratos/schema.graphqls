@@ -1,0 +1,78 @@
+# Contrato GraphQL do Serviço de Streaming de Músicas.
+# Este MESMO arquivo é carregado pelo servidor Java (Spring for GraphQL)
+# e pelo servidor Python (Ariadne).
+#
+# Mapeamento CRUD -> GraphQL (tudo trafega via HTTP POST /graphql):
+#   GET    (consultar) -> Query
+#   POST   (criar)     -> Mutation criar*
+#   PUT    (alterar)   -> Mutation atualizar*
+#   DELETE (remover)   -> Mutation remover*
+
+type Query {
+  # Usuários
+  usuarios: [Usuario!]!
+  usuario(id: ID!): Usuario
+
+  # Músicas
+  musicas: [Musica!]!
+  musica(id: ID!): Musica
+
+  # Playlists
+  playlist(id: ID!): Playlist
+
+  # Consultas pedidas no enunciado
+  playlistsDoUsuario(usuarioId: ID!): [Playlist!]!
+  musicasDaPlaylist(playlistId: ID!): [Musica!]!
+  playlistsComMusica(musicaId: ID!): [Playlist!]!
+}
+
+type Mutation {
+  criarUsuario(input: UsuarioInput!): Usuario!
+  atualizarUsuario(id: ID!, input: UsuarioInput!): Usuario!
+  removerUsuario(id: ID!): Boolean!
+
+  criarMusica(input: MusicaInput!): Musica!
+  atualizarMusica(id: ID!, input: MusicaInput!): Musica!
+  removerMusica(id: ID!): Boolean!
+
+  criarPlaylist(usuarioId: ID!, input: PlaylistInput!): Playlist!
+  atualizarPlaylist(id: ID!, input: PlaylistInput!): Playlist!
+  removerPlaylist(id: ID!): Boolean!
+}
+
+type Usuario {
+  id: ID!
+  nome: String!
+  idade: Int!
+  # relacionamento navegável (o cliente escolhe se quer buscar)
+  playlists: [Playlist!]!
+}
+
+type Musica {
+  id: ID!
+  nome: String!
+  artista: String!
+  playlists: [Playlist!]!
+}
+
+type Playlist {
+  id: ID!
+  nome: String!
+  usuario: Usuario!
+  musicas: [Musica!]!
+}
+
+input UsuarioInput {
+  nome: String!
+  idade: Int!
+}
+
+input MusicaInput {
+  nome: String!
+  artista: String!
+}
+
+input PlaylistInput {
+  nome: String!
+  musicaIds: [ID!]!
+}

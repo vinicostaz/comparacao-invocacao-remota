@@ -1,0 +1,118 @@
+// Contrato gRPC do Serviço de Streaming de Músicas.
+// Este MESMO arquivo é usado pelo servidor Java (protobuf-maven-plugin)
+// e pelo servidor Python (grpc_tools.protoc).
+//
+// Mapeamento CRUD -> RPC:
+//   POST   (criar)     -> Criar*
+//   GET    (consultar) -> Listar* / Obter*
+//   PUT    (alterar)   -> Atualizar*
+//   DELETE (remover)   -> Remover*
+syntax = "proto3";
+
+package streaming;
+
+import "google/protobuf/empty.proto";
+
+option java_multiple_files = true;
+option java_package = "br.streaming.grpc.proto";
+option java_outer_classname = "StreamingProto";
+
+// ---------------------------------------------------------------- recursos
+message Usuario {
+  int64 id = 1;
+  string nome = 2;
+  int32 idade = 3;
+}
+
+message Musica {
+  int64 id = 1;
+  string nome = 2;
+  string artista = 3;
+}
+
+message Playlist {
+  int64 id = 1;
+  string nome = 2;
+  int64 usuario_id = 3;          // dono da playlist
+  repeated int64 musica_ids = 4; // músicas da playlist, em ordem
+}
+
+// ------------------------------------------------------------- requisições
+message IdRequest {
+  int64 id = 1;
+}
+
+message CriarUsuarioRequest {
+  string nome = 1;
+  int32 idade = 2;
+}
+
+message AtualizarUsuarioRequest {
+  int64 id = 1;
+  string nome = 2;
+  int32 idade = 3;
+}
+
+message CriarMusicaRequest {
+  string nome = 1;
+  string artista = 2;
+}
+
+message AtualizarMusicaRequest {
+  int64 id = 1;
+  string nome = 2;
+  string artista = 3;
+}
+
+message CriarPlaylistRequest {
+  int64 usuario_id = 1;
+  string nome = 2;
+  repeated int64 musica_ids = 3;
+}
+
+message AtualizarPlaylistRequest {
+  int64 id = 1;
+  string nome = 2;
+  repeated int64 musica_ids = 3;
+}
+
+// ------------------------------------------------------- respostas em lista
+message ListaUsuarios {
+  repeated Usuario usuarios = 1;
+}
+
+message ListaMusicas {
+  repeated Musica musicas = 1;
+}
+
+message ListaPlaylists {
+  repeated Playlist playlists = 1;
+}
+
+// ----------------------------------------------------------------- serviço
+service StreamingService {
+  // Usuários
+  rpc CriarUsuario (CriarUsuarioRequest) returns (Usuario);
+  rpc ListarUsuarios (google.protobuf.Empty) returns (ListaUsuarios);
+  rpc ObterUsuario (IdRequest) returns (Usuario);
+  rpc AtualizarUsuario (AtualizarUsuarioRequest) returns (Usuario);
+  rpc RemoverUsuario (IdRequest) returns (google.protobuf.Empty);
+
+  // Músicas
+  rpc CriarMusica (CriarMusicaRequest) returns (Musica);
+  rpc ListarMusicas (google.protobuf.Empty) returns (ListaMusicas);
+  rpc ObterMusica (IdRequest) returns (Musica);
+  rpc AtualizarMusica (AtualizarMusicaRequest) returns (Musica);
+  rpc RemoverMusica (IdRequest) returns (google.protobuf.Empty);
+
+  // Playlists
+  rpc CriarPlaylist (CriarPlaylistRequest) returns (Playlist);
+  rpc ListarPlaylistsDoUsuario (IdRequest) returns (ListaPlaylists); // id = usuário
+  rpc ObterPlaylist (IdRequest) returns (Playlist);
+  rpc AtualizarPlaylist (AtualizarPlaylistRequest) returns (Playlist);
+  rpc RemoverPlaylist (IdRequest) returns (google.protobuf.Empty);
+
+  // Consultas
+  rpc ListarMusicasDaPlaylist (IdRequest) returns (ListaMusicas);    // id = playlist
+  rpc ListarPlaylistsComMusica (IdRequest) returns (ListaPlaylists); // id = música
+}

@@ -1,6 +1,6 @@
 # Comparação de Tecnologias de Invocação Remota
 
-Implementação de um serviço de streaming de músicas usando quatro tecnologias de invocação remota: SOAP, REST, GraphQL e gRPC. Todas as versões usam Python, o mesmo modelo de dados e a mesma camada SQLite.
+Serviço de streaming de músicas implementado com **REST, GraphQL, SOAP e gRPC** em **Java e Python**, totalizando oito servidores equivalentes. O projeto inclui contratos compartilhados, teste funcional único para todas as implementações, benchmark comparável e gráficos em escala linear.
 
 ## Equipe
 
@@ -8,161 +8,123 @@ Implementação de um serviço de streaming de músicas usando quatro tecnologia
 - Ângelo Kauê - 2225671
 - Vinicius Andrade - 2320419
 
-## Escopo
+## Escopo adotado
 
-O serviço oferece CRUD de:
+O projeto atende à parte prática do enunciado: CRUD de usuários, músicas e playlists, consultas relacionais, análise baseada na implementação e testes de carga. A pesquisa sobre origem, vantagens e desvantagens não foi incluída, conforme a orientação dada pelo professor em sala.
 
-- usuários;
-- músicas;
-- playlists.
+## Oito serviços comparáveis
 
-Também oferece as consultas relacionais solicitadas:
+| Tecnologia | Java | Porta | Python | Porta |
+|---|---|---:|---|---:|
+| REST | Spring Boot e Spring MVC | 8001 | FastAPI e Uvicorn | 9001 |
+| GraphQL | Spring for GraphQL | 8002 | Ariadne e Uvicorn | 9002 |
+| SOAP | Jakarta XML Web Services | 8003 | Spyne e Waitress | 9003 |
+| gRPC | grpc-java e Netty | 8004 | grpcio | 9004 |
 
-- playlists de um usuário;
-- músicas de uma playlist;
-- playlists que contêm uma música.
+As duas linguagens usam as mesmas regras, os mesmos dados iniciais e os contratos de [`contratos/`](contratos/). Cada serviço começa com 100 usuários, 200 músicas e 200 playlists, com dez músicas por playlist.
 
-## Tecnologias
+## Operações implementadas
 
-| Implementação | Biblioteca | Interface |
-|---|---|---|
-| REST | FastAPI | HTTP e JSON |
-| GraphQL | Strawberry | Schema GraphQL sobre HTTP |
-| SOAP | Spyne | WSDL e XML sobre HTTP |
-| gRPC | grpcio | Protocol Buffers sobre HTTP/2 |
+- CRUD completo de usuários, músicas e playlists.
+- Listagem de todos os usuários e de todas as músicas.
+- Playlists de um usuário.
+- Músicas de uma playlist.
+- Playlists que contêm uma música.
+- Remoção em cascata das playlists quando o usuário é removido.
+- Remoção da música de todas as playlists quando ela sai do catálogo.
+- Erros equivalentes para recurso inexistente e entrada inválida.
 
-## Estrutura do repositório
+## Estrutura
 
 ```text
 .
-├── apresentacao/        # apresentação final
-├── enunciado/           # PDF fornecido pelo professor
-├── results/             # resultados brutos e gráficos em PNG
-├── scripts/             # geração dos stubs gRPC
-├── src/music_service/   # domínio, APIs e benchmark
-├── tests/               # testes automatizados
+├── contratos/       # schema GraphQL e arquivo Protocol Buffers compartilhados
+├── java/            # projeto Maven com quatro serviços e módulo comum
+├── python/          # quatro serviços e repositório comum em Python
+├── testes/          # clientes, teste funcional e benchmark com Locust
+├── resultados/      # CSVs, ambiente da medição e gráficos lineares
+├── apresentacao/    # apresentação final
+├── enunciado/       # PDF original do trabalho
 ├── Makefile
-└── pyproject.toml
+└── README.md
 ```
 
-## Preparação do ambiente
+## Preparação
 
-Requer Python 3.11 ou superior.
+Pré-requisitos: Python 3.10 ou superior, Java 17 ou superior e Maven 3.8 ou superior.
 
 ```bash
 make setup
-make seed
-make test
+make build-java
 ```
 
-O comando `make setup` cria o ambiente virtual, instala as dependências e gera os arquivos Python a partir de `music.proto`.
+## Execução e teste funcional
 
-## Execução
-
-Abra quatro terminais na raiz do repositório.
-
-REST:
+Em um terminal, inicie os oito serviços:
 
 ```bash
-MUSIC_DB=data/music.db PYTHONPATH=src .venv/bin/uvicorn \
-  music_service.services.rest:app --port 8001
+make start
 ```
 
-GraphQL:
-
-```bash
-MUSIC_DB=data/music.db PYTHONPATH=src .venv/bin/uvicorn \
-  music_service.services.graphql:app --port 8002
-```
-
-SOAP:
-
-```bash
-MUSIC_DB=data/music.db PYTHONPATH=src .venv/bin/python \
-  -m music_service.services.soap
-```
-
-gRPC:
-
-```bash
-MUSIC_DB=data/music.db PYTHONPATH=src .venv/bin/python \
-  -m music_service.services.grpc_api.server
-```
-
-Endereços locais:
-
-- REST e OpenAPI: `http://127.0.0.1:8001/docs`
-- GraphQL: `http://127.0.0.1:8002/graphql`
-- SOAP e WSDL: `http://127.0.0.1:8003/?wsdl`
-- gRPC: `127.0.0.1:50051`
-
-## Testes automatizados
+Em outro terminal, execute o mesmo roteiro funcional em todos:
 
 ```bash
 make test
 ```
 
-Os testes verificam regras do domínio, CRUD, integridade dos relacionamentos e o contrato REST.
+O teste percorre 17 etapas por serviço: CRUD, cinco consultas do enunciado, integridade dos relacionamentos e erros. As oito implementações passaram nesse roteiro.
 
 ## Testes de carga
+
+O benchmark inicia um serviço por vez, faz aquecimento e mede quatro cenários:
+
+- `consulta`: sorteio entre as cinco consultas do enunciado;
+- `relacionamento`: músicas de uma playlist;
+- `catalogo`: listagem completa das 200 músicas;
+- `crud`: criação, consulta, alteração e remoção de um usuário.
+
+Cada cenário usa **1, 10, 20, 30 e 40 usuários simultâneos**. Os gráficos usam escala linear nos dois eixos.
 
 ```bash
 make benchmark
 ```
 
-O benchmark usa três perfis:
-
-- leitura de um usuário;
-- leitura das músicas de uma playlist;
-- ciclo de criação e remoção de um usuário.
-
-Cada tecnologia recebe 180 operações em cada nível:
-
-- carga baixa: concorrência 1;
-- carga média: concorrência 10;
-- carga alta: concorrência 30.
-
-Os gráficos da apresentação usam escala linear. Os dados brutos estão em [`results/benchmark.csv`](results/benchmark.csv) e [`results/benchmark.json`](results/benchmark.json).
-
-Para gerar novamente as imagens a partir do CSV:
+Para refazer apenas os gráficos usando os CSVs existentes:
 
 ```bash
 make charts
 ```
 
-## Gráficos dos resultados
+A medição versionada contém 160 combinações de serviço, cenário e carga. Foram processadas **2.227.534 requisições sem falhas**. Os números descrevem estas implementações nesta máquina e não representam uma classificação universal dos protocolos.
 
-Todos os eixos usam escala linear. Em cada gráfico, as cargas baixa, média e alta correspondem respectivamente às concorrências 1, 10 e 30, sempre com 180 operações por tecnologia e nível.
+## Principais resultados
 
-### Leitura de usuário por ID
+Nas consultas variadas, as maiores vazões medidas foram 10.837 req/s para gRPC Java, 9.834 req/s para REST Java, 7.820 req/s para REST Python e 5.377 req/s para gRPC Python. GraphQL Python chegou a 572 req/s e SOAP Python a 496 req/s.
 
-![Vazão e latência p95 na leitura de usuário por ID](results/graficos/leitura_usuario.png)
+No catálogo com 40 usuários, o p95 foi de 4 ms para gRPC Java, 5 ms para REST Java, 11 ms para REST Python, 30 ms para gRPC Python, 110 ms para GraphQL Python e 760 ms para SOAP Python.
 
-### Leitura de músicas de uma playlist
+O gRPC produziu a menor resposta para listar 200 músicas, com 5,4 KB. REST usou 10,3 KB, GraphQL 10,7 KB e SOAP variou de 17,3 KB em Java a 22,1 KB em Python.
 
-![Vazão e latência p95 na leitura de músicas de uma playlist](results/graficos/leitura_playlist.png)
+### Vazão em consultas variadas
 
-### Ciclo de criação e remoção
+![Vazão em consultas variadas para Java e Python](resultados/graficos/vazao_consulta.png)
 
-![Vazão e latência p95 no ciclo de criação e remoção](results/graficos/ciclo_escrita.png)
+### Latência p95 na listagem do catálogo
 
-### Vazão com carga média
+![Latência p95 na listagem completa de músicas](resultados/graficos/latencia_p95_catalogo.png)
 
-| Perfil | REST | GraphQL | SOAP | gRPC |
-|---|---:|---:|---:|---:|
-| Usuário por ID | 640,05 req/s | 543,71 req/s | 421,18 req/s | 1.573,98 req/s |
-| Músicas da playlist | 518,33 req/s | 417,34 req/s | 245,80 req/s | 1.085,61 req/s |
-| Ciclo de escrita | 165,75 req/s | 195,10 req/s | 155,74 req/s | 198,90 req/s |
+### Tamanho das respostas
 
-Os 6.480 casos medidos terminaram sem erro. Os resultados descrevem estas implementações neste computador. Eles não constituem uma comparação universal dos protocolos.
+![Tamanho das respostas de listagem de músicas](resultados/graficos/tamanho_resposta.png)
+
+Todos os gráficos e dados detalhados estão em [`resultados/`](resultados/).
 
 ## Entregáveis
 
-- [Apresentação final](apresentacao/Trabalho_6.pptx)
-- [Enunciado em PDF](enunciado/Trabalho_6.pdf)
-- [Resultados em CSV](results/benchmark.csv)
-- [Resultados em JSON](results/benchmark.json)
-- [Gráfico de leitura de usuário](results/graficos/leitura_usuario.png)
-- [Gráfico de leitura de playlist](results/graficos/leitura_playlist.png)
-- [Gráfico do ciclo de escrita](results/graficos/ciclo_escrita.png)
-
+- [Apresentação](apresentacao/Trabalho_6.pptx)
+- [Enunciado](enunciado/Trabalho_6.pdf)
+- [Resultados consolidados](resultados/resultados.csv)
+- [Resultados por operação](resultados/resultados_operacoes.csv)
+- [Carga de 90% da vazão máxima medida](resultados/saturacao.csv)
+- [Descrição do ambiente](resultados/ambiente.txt)
+- [Análise dos resultados](resultados/LEIA-ME.md)
